@@ -246,6 +246,9 @@ public class SetTbInfoController {
                     null,
                     tenantAuthToken
             ));
+        } else {
+            System.out.println("Очистка платформы по адресу \""+ targetURL + "\" не будет произведена. " +
+                    "Для полной очистки доступны только платформы, адрес которых начинается с \"http://localhost:\"");
         }
     }
 }

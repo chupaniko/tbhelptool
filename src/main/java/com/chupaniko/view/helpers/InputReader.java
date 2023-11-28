@@ -33,7 +33,6 @@ public class InputReader {
     public String getUserInput() {
         String userInput = "";
 
-
         userInput = scanner.nextLine();
         return userInput;
     }
