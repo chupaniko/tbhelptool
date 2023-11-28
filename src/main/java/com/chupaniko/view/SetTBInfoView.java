@@ -10,15 +10,36 @@ import org.json.JSONObject;
  */
 public class SetTBInfoView implements SimpleView {
 
+    /**
+     * Console input processor.
+     */
     private InputReader reader;
 
+    /**
+     * The view initializer.
+     *
+     * @param reader Console input processor.
+     */
     public SetTBInfoView(InputReader reader) {
         this.reader = reader;
     }
 
+    /**
+     * Starts interaction between the user and the view.
+     */
     @Override
     public void show() {
+        /*
+        Опция, которую выбирает пользователь (номер платформы, начиная с "1", или "0", если пользователь решил
+        добавить новую платформу.
+         */
         String option = "0";
+
+        SimpleView subView;
+        /*
+        Пользователь может добавлять платформы, сколько захочет. Выход из вьюхи будет, когда он выберет какую-то
+        платформу для загрузки в неё бэкапа.
+         */
         while (option.equals("0")) {
             String[] accKeys = AccountsWorker.getInstance().getAccounts().keySet()
                     .stream().map(String::toString).toArray(String[]::new);
@@ -30,32 +51,14 @@ public class SetTBInfoView implements SimpleView {
             }
             System.out.print(" > ");
             option = reader.getUserInput();
+
             if (option.equals("0")) {
-                System.out.print("Введите URL платформы (без последнего слеша, например: http://lk.aistiot24.ru, http://localhost:8080)\n > ");
-                String url = reader.getUserInput();
-                System.out.print("Введите имя платформы (можно использовать часть URL-адреса)\n > ");
-                String accountKey = reader.getUserInput();
-                System.out.print("Введите псевдоним платформы (он будет включен в имя файла с образом)\n > ");
-                String name = reader.getUserInput();
-                System.out.print("Введите tenant admin username\n > ");
-                String tenantAdminUsername = reader.getUserInput();
-                System.out.print("Введите tenant admin password\n > ");
-                String tenantAdminPassword = reader.getUserInput();
-                System.out.print("Введите sysadmin username\n > ");
-                String sysadminUsername = reader.getUserInput();
-                System.out.print("Введите sysadmin password\n > ");
-                String sysadminPassword = reader.getUserInput();
-                AccountsWorker.getInstance().addAccount(
-                        accountKey,
-                        name,
-                        url,
-                        tenantAdminUsername,
-                        tenantAdminPassword,
-                        sysadminUsername,
-                        sysadminPassword
-                );
+                subView = new AddTbAccView(reader);
+
+                subView.show();
             } else {
                 String targetAccKey = "";
+
                 try {
                     targetAccKey = accKeys[Integer.parseInt(option) - 1];
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
@@ -67,6 +70,7 @@ public class SetTBInfoView implements SimpleView {
                 System.out.println("Для предварительного очищения платформы введите \"" + targetAccKey + "\"");
                 System.out.println("Для дозаписи в платформу сущностей из бэкапа просто нажмите ENTER");
                 SetTbInfo setTbInfo = new SetTbInfo(targetAccKey);
+
                 setTbInfo.setTBInfo(reader.getUserInput().equals(targetAccKey));
             }
         }

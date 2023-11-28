@@ -5,7 +5,6 @@ import com.chupaniko.dataworker.EntityType;
 import com.chupaniko.dataworker.GetTbInfo;
 import com.chupaniko.view.helpers.InputReader;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -43,6 +42,8 @@ public class GetTBInfoView implements SimpleView {
         добавить новую платформу.
          */
         String option = "0";
+
+        SimpleView subView;
         /*
         Пользователь может добавлять платформы, сколько захочет. Выход из вьюхи будет, когда он выберет какую-то
         платформу для бэкапа.
@@ -61,31 +62,9 @@ public class GetTBInfoView implements SimpleView {
             System.out.print(" > ");
             option = reader.getUserInput();
             // user wants to add new platform for futher use
-            //TODO: поместить в отдельное view
             if (option.equals("0")) {
-                System.out.print("Введите URL платформы (без последнего слеша, например: http://lk.aistiot24.ru, http://localhost:8080)\n > ");
-                String url = reader.getUserInput();
-                System.out.print("Введите имя платформы (можно использовать часть URL-адреса)\n > ");
-                String accountKey = reader.getUserInput();
-                System.out.print("Введите псевдоним платформы (он будет включен в имя файла с образом)\n > ");
-                String name = reader.getUserInput();
-                System.out.print("Введите tenant admin username\n > ");
-                String tenantAdminUsername = reader.getUserInput();
-                System.out.print("Введите tenant admin password\n > ");
-                String tenantAdminPassword = reader.getUserInput();
-                System.out.print("Введите sysadmin username\n > ");
-                String sysadminUsername = reader.getUserInput();
-                System.out.print("Введите sysadmin password\n > ");
-                String sysadminPassword = reader.getUserInput();
-                AccountsWorker.getInstance().addAccount(
-                        accountKey,
-                        name,
-                        url,
-                        tenantAdminUsername,
-                        tenantAdminPassword,
-                        sysadminUsername,
-                        sysadminPassword
-                );
+                subView = new AddTbAccView(reader);
+                subView.show();
                 // user selected some platform
             } else {
                 // account key selected by user
@@ -125,16 +104,27 @@ public class GetTBInfoView implements SimpleView {
         }
     }
 
+    //TODO: поместить в контроллер
+    /**
+     * Отбирает сущности типа "ASSET" и "DEVICE", принадлежащие каким-то CUSTOMER-ам.
+     *
+     * @param customers Массив CUSTOMER-ов.
+     * @param possibleChildEntities Мапа "ТИП_СУЩНОСТИ" -> "JSON_сущности" из сущностей,
+     *                              которые возможно принадлежат CUSTOMER-ам
+     * @return Мапа "ТИП_СУЩНОСТИ" -> "JSON_сущности" из сущностей, принадлежащих CUSTOMER-ам
+     */
     private Map<String, JSONArray> getCustomerChildEntities(JSONArray customers,
                                                             Map<String, JSONArray> possibleChildEntities) {
         Map<String, JSONArray> resultMap = new HashMap<>();
         Set<String> customerIds = new HashSet<>();
+
         for (Object customer : customers) {
             customerIds.add(((JSONObject) customer).getJSONObject("id").getString("id"));
         }
         for (Map.Entry<String, JSONArray> typedEntities : possibleChildEntities.entrySet()) {
             if (!typedEntities.getKey().equals(EntityType.CUSTOMER.toString())) {
                 JSONArray childEntities = new JSONArray();
+
                 for (Object entity : typedEntities.getValue()) {
                     if (((JSONObject) entity).has("customerId")) {
                         for (String customerId : customerIds) {
@@ -152,6 +142,13 @@ public class GetTBInfoView implements SimpleView {
         return resultMap;
     }
 
+    /**
+     * Предлагает пользователю выбрать сущности Thingsboard заданного типа из списка.
+     *
+     * @param entityType Тип сущностей, которые подлежат отбору. Строковое представление {@link EntityType}.
+     * @param allTypedEntities Список всех сущностей указанного типа, которые подлежат отбору
+     * @return Список выбранных пользователем сущностей указанного типа.
+     */
     private JSONArray selectEntities(String entityType, JSONArray allTypedEntities) {
         System.out.printf("Введите через пробел номера всех сущностей типа %S, которые должны попасть в бэкап. " +
                         "Если нужно записать в бэкап все сущности, просто нажмите ENTER.%n",

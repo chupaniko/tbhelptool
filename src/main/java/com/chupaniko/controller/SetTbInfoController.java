@@ -13,6 +13,9 @@ import java.util.Map;
 public class SetTbInfoController {
     private final String targetURL;
     private final String tenantAuthToken;
+    /**
+     * Можно убрать, он нужен только для управления tenant admins.
+     */
     private final String sysadminAuthToken;
     private Map<String, String> oldNewIds;
 

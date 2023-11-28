@@ -29,8 +29,10 @@ public class MainView implements SimpleView {
 
                 String option = reader.getUserInput();
                 SimpleView subView;
+
                 switch (option) {
                     case "0":
+                        // пустая вьюха
                         subView = () -> {};
                         exit = true;
                         break;
